@@ -6,6 +6,7 @@
 using namespace std;
 
 class Labyrinth {
+	friend class Mage;
 	unsigned N, M, monstCount, freeBlocks = 0;
 	Block* monsters;
 	Block** pos;
@@ -247,4 +248,62 @@ bool compareLabyrinths(Labyrinth &v1, Labyrinth &v2) {
 	else {
 		return  v1.getMonstCount() < v2.getMonstCount();
 	}
+}
+
+class Player {
+protected:
+	unsigned x, y;
+public:
+	virtual bool canPassMaze(Labyrinth&) = 0;
+};
+
+class Mage : public Player {
+public:
+	virtual bool canPassMaze(Labyrinth &);
+};
+
+bool Mage::canPassMaze(Labyrinth &lab) {
+	stack<Block> open;
+	Block temp = lab.pos[0][0];
+	lab.pos[0][0] = '*';
+	if (lab.pos[1][0] == '.') {
+		open.push(lab.pos[1][0]);
+		lab.pos[1][0] = '*';
+	}
+	if (lab.pos[0][1] == '.') {
+		open.push(lab.pos[0][1]);
+		lab.pos[0][1] = '*';
+	}
+	while (open.top().x != lab.M - 1 || open.top().y != lab.N - 1) {
+		Block temp = open.top();
+		open.pop();
+		x = temp.x;
+		y = temp.y;
+		if (x != 0 && lab.pos[y][x - 1] == '.') {
+			open.push(lab.pos[y][x - 1]);
+			lab.pos[y][x - 1] = '*';
+		}
+		if (y != 0 && lab.pos[y - 1][x] == '.') {
+			open.push(lab.pos[y - 1][x]);
+			lab.pos[y - 1][x] = '*';
+		}
+		if (x != lab.M - 1 && lab.pos[y][x + 1] == '.') {
+			open.push(lab.pos[y][x + 1]);
+			lab.pos[y][x + 1] = '*';
+		}
+		if (y != lab.N - 1 && lab.pos[y + 1][x] == '.') {
+			open.push(lab.pos[y + 1][x]);
+			lab.pos[y + 1][x] = '*';
+		}
+		if (lab.moveMonstersEatPlayer(temp)) {
+			return false;
+		}
+		/*Labyrinth l(lab);
+		for (int i = 0; i < l.monstCount; i++) {
+			l.pos[l.monsters[i].y][l.monsters[i].x] = '@';
+		}
+		l.pos[y][x] = '%';
+		l.printLab();*/
+	}
+	return true;
 }
