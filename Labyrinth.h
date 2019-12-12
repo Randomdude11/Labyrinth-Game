@@ -7,6 +7,7 @@ using namespace std;
 
 class Labyrinth {
 	friend class Mage;
+	friend class Succubus;
 	unsigned N, M, monstCount, freeBlocks = 0;
 	Block* monsters;
 	Block** pos;
@@ -306,4 +307,56 @@ bool Mage::canPassMaze(Labyrinth &lab) {
 		l.printLab();*/
 	}
 	return true;
+}
+class Succubus : public Player {
+private:
+	list<Block> path;
+public:
+	virtual bool canPassMaze(Labyrinth &);
+	void findPath(Labyrinth);
+};
+
+void Succubus::findPath(Labyrinth lab) {
+	queue<BFSblock> open;
+	open.push(BFSblock(0,0));
+	while (open.front().x != lab.M - 1 || open.front().y != lab.N - 1) {
+		BFSblock b = open.front();
+		open.pop();
+		if (b.x > 0 && lab.pos[b.y][b.x - 1] == '.') {
+			open.push(BFSblock(b, b.y, b.x-1));
+			lab.pos[b.y][b.x - 1] = '*';
+		}
+		if (b.x < lab.M - 1 && lab.pos[b.y][b.x + 1] == '.') {
+			open.push(BFSblock(b, b.y, b.x+1));
+			lab.pos[b.y][b.x + 1] = '*';
+		}
+		if (b.y > 0 && lab.pos[b.y - 1][b.x] == '.') {
+			open.push(BFSblock(b, b.y-1, b.x));
+			lab.pos[b.y - 1][b.x] = '*';
+		}
+		if (b.y < lab.N - 1 && lab.pos[b.y + 1][b.x] == '.') {
+			open.push(BFSblock(b, b.y+1, b.x));
+			lab.pos[b.y + 1][b.x] = '*';
+		}
+	}
+	path = open.front().history;
+	path.push_back(open.front());
+}
+bool Succubus::canPassMaze(Labyrinth &lab) {
+	findPath(lab);
+	list<Block>::iterator i = path.begin();
+	++i;
+	while (!lab.moveMonstersEatPlayer(*i)) {
+		/*Labyrinth l(lab);
+		for (int i = 0; i < l.monstCount; i++) {
+			l.pos[l.monsters[i].y][l.monsters[i].x] = '@';
+		}
+		l.pos[i->y][i->x] = '%';
+		l.printLab();*/
+		++i;
+		if (i->y == lab.N-1 && i->x == lab.M-1) {
+			return true;
+		}
+	}
+	return false;
 }
