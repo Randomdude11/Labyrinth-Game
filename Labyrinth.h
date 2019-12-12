@@ -28,7 +28,7 @@ public:
 	unsigned getSize() const;
 	unsigned getMonstCount() const;
 	unsigned getFreeBlocks() const;
-	void blockSquare(unsigned, unsigned);
+	bool blockSquare(unsigned, unsigned);
 	void addMonsters();
 	bool moveMonstersEatPlayer(const Block &);
 };
@@ -177,8 +177,12 @@ unsigned Labyrinth::getFreeBlocks() const {
 bool Labyrinth::operator<(const Labyrinth& other) const {
 	return getSize() < other.getSize();
 }
-void Labyrinth::blockSquare(unsigned y, unsigned x) {
-	pos[y][x].sym = '!';
+bool Labyrinth::blockSquare(unsigned y, unsigned x) {
+	if (pos[y][x].sym == '.') {
+		pos[y][x].sym = '!';
+		return true;
+	}
+	return false;
 }
 void Labyrinth::addMonsters() {
 	for (int i = 0; i < monstCount; i++) {
